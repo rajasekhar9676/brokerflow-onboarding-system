@@ -13,6 +13,7 @@ const schema = z.object({
 
 export default function CreateCustomer() {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -27,11 +28,13 @@ export default function CreateCustomer() {
 
   const onSubmit = async (data) => {
     setError("");
+    setSuccess(false);
     setSubmitting(true);
     try {
       const res = await customerAPI.create(data);
       if (res.data?.success) {
-        navigate("/", { replace: true });
+        setSuccess(true);
+        setTimeout(() => navigate("/", { replace: true }), 800);
       } else {
         setError("Failed to create customer");
       }
@@ -51,6 +54,11 @@ export default function CreateCustomer() {
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 sm:p-8">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {success && (
+            <div className="p-3 rounded-lg bg-green-50 text-green-800 text-sm font-medium">
+              Customer added successfully! Redirecting to dashboard...
+            </div>
+          )}
           {error && (
             <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
               {error}
