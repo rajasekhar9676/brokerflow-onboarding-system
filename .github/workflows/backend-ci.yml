@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        continue-on-error: true
+
+      - name: Install dependencies (no lockfile)
+        if: failure()
+        run: npm install
+
+      - name: Prisma generate
+        env:
+          DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci?schema=public"
+          DIRECT_URL: "postgresql://ci:ci@localhost:5432/ci?schema=public"
+        run: npx prisma generate

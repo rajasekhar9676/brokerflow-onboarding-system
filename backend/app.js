@@ -25,8 +25,24 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }));
+// Allow frontend origins (local + production). Set FRONTEND_URL on Render to your frontend URL.
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : true, credentials: true }));
 app.use(express.json());
+
+// Root route so GET / doesn't return "Cannot GET /"
+app.get("/", (req, res) => {
+  res.json({
+    name: "BrokerFlow Onboarding API",
+    docs: "API base: /api",
+    health: "/api/health",
+    auth: "/api/auth (register, login, me)",
+  });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);

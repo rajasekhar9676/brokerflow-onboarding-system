@@ -10,8 +10,20 @@ Production-ready MERN-style SaaS onboarding system with role-based access (ADMIN
 ## Prerequisites
 
 - Node.js 18+
-- PostgreSQL database
+- PostgreSQL database ([Neon](https://neon.tech) recommended for hosting)
 - npm or yarn
+
+### Database: Neon (PostgreSQL)
+
+1. Sign up at [neon.tech](https://neon.tech) and create a project.
+2. Open **Dashboard → your project → Connection details**.
+3. Copy **Pooled connection** string → use as `DATABASE_URL` in `backend/.env`.
+4. Copy **Direct connection** string → use as `DIRECT_URL` in `backend/.env`.
+5. Both URLs must include `?sslmode=require` (Neon includes this by default).
+
+**Shortcut:** If you only copy one Neon URL (direct, non-pooler), paste it into **both** `DATABASE_URL` and `DIRECT_URL` in `.env`.
+
+Then run migrations or push schema (see Backend setup below).
 
 ## Setup Instructions
 
@@ -22,11 +34,12 @@ cd backend
 npm install
 ```
 
-Create `.env` in `backend/` (see [Backend .env](#backend-env) below).
+Create `.env` in `backend/` with `DATABASE_URL`, `DIRECT_URL`, and JWT (see [Backend .env](#backend-env)).
 
 ```bash
 npx prisma generate
-npx prisma db push
+npx prisma migrate deploy
+# or first-time: npx prisma db push
 npm run dev
 ```
 
@@ -86,15 +99,20 @@ frontend/
 
 ## Sample .env Files
 
-**Backend (`backend/.env`)** – copy from `backend/.env.example`:
+**Backend (`backend/.env`)** – copy from `backend/.env.example`.
+
+**Neon:**
 
 ```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/brokerflow?schema=public"
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@ep-xxx.region.aws.neon.tech/neondb?sslmode=require"
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 JWT_EXPIRES_IN="7d"
 FRONTEND_URL="http://localhost:5173"
 PORT=5000
 ```
+
+**Local PostgreSQL:** set `DIRECT_URL` to the **same** value as `DATABASE_URL`.
 
 **Frontend (`frontend/.env`)** – copy from `frontend/.env.example`:
 
