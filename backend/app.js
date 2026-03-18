@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
@@ -25,8 +24,36 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }));
+// CORS: handle preflight first so OPTIONS never hits a 404 without headers.
+// Echo request Origin so Vercel preview URLs (any *.vercel.app) always work.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Max-Age", "86400");
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  next();
+});
+
 app.use(express.json());
+
+// Root route so GET / doesn't return "Cannot GET /"
+app.get("/", (req, res) => {
+  res.json({
+    name: "BrokerFlow Onboarding API",
+    docs: "API base: /api",
+    health: "/api/health",
+    auth: "/api/auth (register, login, me)",
+  });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);

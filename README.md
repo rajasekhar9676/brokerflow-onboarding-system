@@ -1,11 +1,12 @@
 # 🚀 Neximprove Onboarding System
 
-Production-ready MERN-style SaaS onboarding system with role-based access (ADMIN, BROKER), JWT auth, and customer onboarding.
+> Built with production practices: security, RBAC, validation, clean structure.
 
 ## 🌐 Live Demo
 
 - **Frontend**: [https://neximprove.vercel.app/](https://neximprove.vercel.app/)
 - **Backend API**: `https://brokerflow-onboarding-system.onrender.com`
+  - **Health**: `https://brokerflow-onboarding-system.onrender.com/api/health`
 
 ---
 
@@ -28,27 +29,132 @@ Admins see customers they’ve added and all users in the system.
 
 ---
 
-## Tech Stack
+## 🛠 Tech Stack
 
-**Backend:** Node.js, Express, PostgreSQL (Prisma), JWT, bcrypt  
-**Frontend:** React (Vite), Tailwind CSS, React Router, Axios, React Hook Form, Zod
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- React Router
+- Axios
+- React Hook Form + Zod
 
-## Prerequisites
+### Backend
+- Node.js + Express
+- PostgreSQL (Neon) + Prisma ORM
 
-- Node.js 18+
-- PostgreSQL database
-- npm or yarn
+### Authentication & Security
+- JWT authentication (Authorization: Bearer token)
+- bcrypt password hashing
+- Role-based access control (ADMIN, BROKER)
+- Backend request validation (express-validator)
 
-## Setup Instructions
+### Deployment
+- Frontend: Vercel
+- Backend: Render
+- Database: Neon (PostgreSQL)
 
-### 1. Backend
+---
+
+## ✨ Features
+
+- **Authentication**: Register/Login, hashed passwords, JWT token
+- **RBAC**:
+  - **ADMIN**: view all users
+  - **BROKER**: create customers and view own customers
+- **Customer onboarding**: name, email, gstin; linked to the logged-in broker
+- **Dashboards**:
+  - Broker dashboard: customer list
+  - Admin dashboard: all users + customers created by admin
+- **Validation**:
+  - Frontend: Zod
+  - Backend: express-validator
+- **UX**: loading states + error handling
+
+---
+
+## 🧱 Architecture Overview
+
+Frontend (Vercel) → Backend API (Render) → PostgreSQL (Neon)
+
+---
+
+## 📁 Project Structure
+
+```text
+brokerflow-onboarding-system/
+  backend/
+    controllers/
+    routes/
+    middleware/
+    prisma/
+    lib/
+    app.js
+  frontend/
+    public/
+    src/
+      pages/
+      components/
+      context/
+      services/
+```
+
+---
+
+## 🗄 Database Schema (Prisma)
+
+### User
+- id
+- name
+- email (unique)
+- password (hashed)
+- role (ADMIN / BROKER)
+- createdAt, updatedAt
+
+### Customer
+- id
+- name
+- email
+- gstin
+- brokerId (linked to User)
+- createdAt, updatedAt
+
+---
+
+## 📦 API Endpoints
+
+### Auth
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me` (protected)
+
+### Customers (protected: BROKER/ADMIN)
+- `POST /api/customers`
+- `GET /api/customers` (my customers)
+
+### Admin (protected: ADMIN)
+- `GET /api/users`
+
+---
+
+## ⚙️ Local Setup
+
+### 1) Clone
+
+```bash
+git clone https://github.com/rajasekhar9676/brokerflow-onboarding-system
+cd brokerflow-onboarding-system
+```
+
+### 2) Backend setup (`backend/`)
 
 ```bash
 cd backend
 npm install
 ```
 
-Create `.env` in `backend/` (see [Backend .env](#backend-env) below).
+Create `backend/.env` (copy from `backend/.env.example`).
+
+Run Prisma and start API:
 
 ```bash
 npx prisma generate
@@ -56,90 +162,67 @@ npx prisma db push
 npm run dev
 ```
 
-API runs at `http://localhost:5000`.
+Backend runs at `http://localhost:5000`.
 
-### 2. Frontend
+### 3) Frontend setup (`frontend/`)
 
 ```bash
-cd frontend
+cd ../frontend
 npm install
-```
-
-Create `.env` in `frontend/` (see [Frontend .env](#frontend-env) below).
-
-```bash
 npm run dev
 ```
 
-App runs at `http://localhost:5173`.
+Frontend runs at `http://localhost:5173`.
 
-### 3. First-time usage
+---
 
-1. Open `http://localhost:5173/register`.
-2. Register with role **Admin** to get admin access, or **Broker** for broker access.
-3. **Admin:** Dashboard shows all users.
-4. **Broker:** Dashboard shows your customers; use "New Customer" to onboard (name, email, GSTIN).
+## 🌐 Deployment Guide
 
-## API Overview
+### Backend (Render)
 
-| Method | Endpoint | Auth | Role | Description |
-|--------|----------|------|------|-------------|
-| POST | `/api/auth/register` | No | - | Register |
-| POST | `/api/auth/login` | No | - | Login |
-| GET | `/api/auth/me` | JWT | Any | Current user |
-| POST | `/api/customers` | JWT | Broker/Admin | Create customer |
-| GET | `/api/customers` | JWT | Broker/Admin | List my customers |
-| GET | `/api/users` | JWT | Admin | List all users |
+- Create a Render **Web Service** from this repo.
+- Set **Root Directory** to `backend` (or set build/start commands accordingly).
+- Set environment variables (Render → Service → Environment):
+  - `DATABASE_URL` and `DIRECT_URL` (from Neon)
+  - `JWT_SECRET`
+  - `FRONTEND_URL` = your Vercel frontend URL (recommended)
 
-## Project Structure
+Then deploy.
 
-```
-backend/
-  controllers/   # auth, customer, user
-  routes/
-  middleware/    # authMiddleware (JWT, adminOnly, brokerOnly)
-  prisma/        # schema.prisma
-  lib/           # prisma client
-  app.js
+### Database (Neon)
 
-frontend/
-  src/
-    pages/       # Login, Register, Dashboard, CreateCustomer
-    components/  # Navbar, ProtectedRoute
-    context/     # AuthContext
-    services/    # api.js (Axios + token)
-```
+- Create a Neon project
+- Copy:
+  - **Pooled** connection → `DATABASE_URL`
+  - **Direct** connection → `DIRECT_URL`
 
-## Sample .env Files
+### Frontend (Vercel)
 
-**Backend (`backend/.env`)** – copy from `backend/.env.example`:
+- Import the repo in Vercel.
+- Set **Root Directory** to `frontend`.
+- Add environment variable:
+  - `VITE_API_URL` = `https://brokerflow-onboarding-system.onrender.com/api`
 
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/brokerflow?schema=public"
-JWT_SECRET="your-super-secret-jwt-key-change-in-production"
-JWT_EXPIRES_IN="7d"
-FRONTEND_URL="http://localhost:5173"
-PORT=5000
-```
+For SPA routing on Vercel (`/login`, `/register` refresh), this repo includes `frontend/vercel.json` rewrites.
 
-**Frontend (`frontend/.env`)** – copy from `frontend/.env.example`:
+---
 
-```env
-VITE_API_URL=/api
-```
+## 🔐 Security Implementation
 
-Use `/api` when running frontend with `npm run dev` (Vite proxies to the backend). For a separate deployment, set `VITE_API_URL` to the full API URL (e.g. `https://api.yourdomain.com/api`).
+- Password hashing with bcrypt
+- JWT auth middleware to protect routes
+- Role checks for admin-only APIs
+- Input validation on frontend (Zod) and backend (express-validator)
 
-## Scripts
+---
 
-**Backend**
+## 🧪 Testing Checklist
 
-- `npm run dev` – run with watch
-- `npm start` – run production
-- `npx prisma studio` – DB GUI
-
-**Frontend**
-
-- `npm run dev` – dev server
-- `npm run build` – production build
-- `npm run preview` – preview build
+- Register user (BROKER)
+- Login user
+- Verify JWT token persists (localStorage)
+- Create customer
+- Fetch customers
+- Register/Login as ADMIN
+- Admin can fetch all users (`/api/users`)
+- Unauthorized access blocked (no token / wrong role)
