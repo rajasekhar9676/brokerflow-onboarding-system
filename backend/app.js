@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
@@ -25,40 +24,25 @@ app.use((req, res, next) => {
   next();
 });
 
-// Allow frontend origins (local + production). Set FRONTEND_URL on Render to your frontend URL.
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+// CORS: handle preflight first so OPTIONS never hits a 404 without headers.
+// Echo request Origin so Vercel preview URLs (any *.vercel.app) always work.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Max-Age", "86400");
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  next();
+});
 
-const corsOptions = {
-  origin: (origin, cb) => {
-    // allow non-browser clients (curl, server-to-server)
-    if (!origin) return cb(null, true);
-
-    // allow explicit allowlist
-    if (allowedOrigins.includes(origin)) return cb(null, true);
-
-    // allow Vercel preview/prod deployments (adjust if you want stricter rules)
-    try {
-      const { hostname } = new URL(origin);
-      if (hostname.endsWith(".vercel.app")) return cb(null, true);
-    } catch {
-      // ignore URL parse errors
-    }
-
-    return cb(new Error(`CORS blocked for origin: ${origin}`));
-  },
-  // We use Authorization header (JWT), not cookies.
-  // Keeping credentials=false avoids the wildcard/credentials mismatch.
-  credentials: false,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 app.use(express.json());
 
 // Root route so GET / doesn't return "Cannot GET /"
