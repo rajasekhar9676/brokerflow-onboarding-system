@@ -16,7 +16,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16 items-center">
           <Link to="/" className="flex items-center gap-2 text-xl font-semibold text-primary-600">
             <span className="text-2xl">📋</span>
-            BrokerFlow
+            Neximprove
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-600 hidden sm:inline">

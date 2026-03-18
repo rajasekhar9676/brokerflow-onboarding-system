@@ -1,6 +1,32 @@
-# BrokerFlow Onboarding System
+# 🚀 Neximprove Onboarding System
 
 Production-ready MERN-style SaaS onboarding system with role-based access (ADMIN, BROKER), JWT auth, and customer onboarding.
+
+## 🌐 Live Demo
+
+- **Frontend**: [https://neximprove.vercel.app/](https://neximprove.vercel.app/)
+- **Backend API**: `https://brokerflow-onboarding-system.onrender.com`
+
+---
+
+## 📸 Screenshots
+
+### Login
+Sign in with email and password.
+
+![Login Page](./screenshots/login.png)
+
+### Broker Dashboard
+Brokers see their onboarded customers and can add new ones.
+
+![Broker Dashboard](./screenshots/broker-dashboard.png)
+
+### Admin Dashboard
+Admins see customers they’ve added and all users in the system.
+
+![Admin Dashboard](./screenshots/admin-dashboard.png)
+
+---
 
 ## Tech Stack
 

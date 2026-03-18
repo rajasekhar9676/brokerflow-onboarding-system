@@ -33,7 +33,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/users", userRoutes);
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "BrokerFlow API is running" });
+  res.json({ status: "ok", message: "Neximprove API is running" });
 });
 
 // Central error logger: log full error so you can see why it failed
@@ -54,7 +54,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`BrokerFlow API running on http://localhost:${PORT}`);
+  console.log(`Neximprove API running on http://localhost:${PORT}`);
   if (!process.env.JWT_SECRET) {
     console.warn("WARN: JWT_SECRET is not set in .env - auth will fail");
   }
